@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<!-- Template by quackit.com -->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>API</title>
+    <style type="text/css">
+
+        /* Layout */
+        body {
+            min-width: 630px;
+        }
+
+        #container {
+            padding-left: 200px;
+            padding-right: 190px;
+        }
+
+        #container .column {
+            position: relative;
+            float: left;
+        }
+
+        #center {
+            padding: 10px 20px;
+            width: 100%;
+        }
+
+        * html body {
+            overflow: hidden;
+        }
+
+        * html #footer-wrapper {
+            float: left;
+            position: relative;
+            width: 100%;
+            padding-bottom: 10010px;
+            margin-bottom: -10000px;
+            background: #fff;
+        }
+
+        /* Aesthetics */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Sans-serif;
+            line-height: 1.5em;
+        }
+
+        p {
+            color: #555;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul a {
+            color: darkgreen;
+            text-decoration: none;
+        }
+
+        #header, #footer {
+            font-size: large;
+            padding: 0.3em;
+            background: #25cace;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header id="header" style="text-align: center; font-size: 2rem; font-color: black"><p>API</p></header>
+
+<div id="container">
+
+    <main id="center" class="column">
+        <article>
+
+            <h1>Общая информация</h1>
+            <p>
+                Для вызова метода пошлите HTTP-запрос по адресу <b>http://clever.vadzimko.com/api/{methodName}</b>.
+                Все методы должны иметь обязательный параметр user_id и некоторые другие параметры (в зависимости от
+                метода).
+                Ответом на каждый запрос является JSON-объект с полями: <br>
+            <ul>
+                <li>'status' : при успешном выполнении метода будет содержать 'OK' или 'Failed', если во время
+                    выполнения метода произошла ошибка или метод был составлен неправильно/отправлен в неправильное
+                    время
+                </li>
+                <li>'comment' : пояснение ошибки (только если status = Failed)
+                </li>
+                <li>другие поля - возвращаемые значения при успешном выполнении метода
+                </li>
+
+
+            </ul>
+            </p>
+
+        </article>
+
+        <article>
+            <h1>startGame</h1>
+            Параметры: user_id;<br>
+            Ответ: started = <b>true</b>, если игра началась, и <b>false</b>, если был добавлен в очередь ожидания
+        </article>
+
+        <article>
+            <h1>sendAnswer</h1>
+            Параметры: user_id, answer: число от 1 до 3 - номер выбранного варианта ответа клиентом;<br>
+            Ответ: status = OK, если ответ был принят. Иначе
+            комментарий, почему не был.
+        </article>
+
+        <article>
+            <h1>checkAnswer и getRound</h1>
+            Это лонгполл запросы. Отправлять их следует друг за другом. <br><br>
+            <b>getRound</b> возвращает информацию о раунде. Отправлять его следует сразу после ответа на startGame.
+            Ответ на этот
+            запрос вернется сразу, если в очереди ожидания был игрок и игра началась, или в тот момент, когда появится
+            соперник
+            и игра начнется, если пользователя поместили в очередь ожидания. Во время игры ответ на getRound вернется
+            сразу, если
+            сейчас идет раунд, а если сейчас перерыв между раундами (чтобы пользователи могли увидеть правильный ответ и
+            ответы
+            друг друга на предыдущий вопрос), то ответ вернется, когда начнется следующий раунд.<br><br>
+
+            Параметры: user_id;<br>
+            Ответ:
+            <ul>
+                <li>round_status - started</li>
+                <li>round_number - номер раунда в этой игре (от 1 до 7)</li>
+                <li>question - вопрос</li>
+                <li>answers - варианты ответов. Ответ с методом sendAnswer должен указывать на порядковый номер (от 1 до
+                    3)
+                    из этих ответов
+                </li>
+                <li>opponent_id - id соперника</li>
+                <li>end_time - время в секундах с 1 января 1970 00:00:00 GMT, когда закончится раунд. Ответ нужно прислать
+                    до наступления этого момента, иначе он не будет засчитан.
+                </li>
+            </ul>
+            <br>
+            <b>checkAnswer</b> проверяет, готовы ли игроки к проверке ответов (оба прислали ответ либо кончилось время раунда).<br>
+            Во время игры ответ вернется сразу, если
+            сейчас идет перерыв между раундами, или сразу после окончания текущего раунда, если он еще не кончился.<br><br>
+
+            Параметры: user_id;<br>
+            Ответ:
+            <ul>
+                <li>round_status - finished</li>
+                <li>round_number - номер раунда в этой игре (от 1 до 7)</li>
+                <li>question - вопрос</li>
+                <li>answers - варианты ответов. Ответ с методом sendAnswer должен указывать на порядковый номер (от 1 до
+                    3)
+                    из этих ответов
+                </li>
+                <li>correct_answer_number - номер правильного ответа</li>
+                <li>user_answer - ответ игрока</li>
+                <li>opponent_answer - ответ противника</li>
+                <li>opponent_id - id соперника</li>
+                <li>timeout_end_time - время в секундах с 1 января 1970 00:00:00 GMT, когда закончится перерыв между
+                    раундами
+                    и может начаться новый раунд (новый раунд начнется, как только один из соперников пошлет getRound на сервер)
+                </li>
+            </ul>
+        </article>
+
+
+        <article>
+            <h1>getGameResult</h1>
+            Параметры: user_id;<br>
+            Ответ:
+            <ul>
+                <li>
+                    status
+                    <ul>
+                        <li>not_started - пользователь еще не начинал игру</li>
+                        <li>not_finished - игра еще идет</li>
+                        <li>finished - игра закончена</li>
+                    </ul>
+                </li>
+            </ul>
+            Если закончена:
+            <ul>
+                <li>has_winner - существование победителя</li>
+                <li>winner_id - только если есть победитель</li>
+                <li>opponent_id - id соперника</li>
+                <li>user_score - количество правильных ответов пользователя</li>
+                <li>opponent_score - количество правильных ответов соперника</li>
+            </ul>
+        </article>
+    </main>
+</div>
+
+</body>
+
+</html>
