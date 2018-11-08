@@ -5,8 +5,11 @@ session_write_close();
 ignore_user_abort(false);
 set_time_limit(Game::$GAME_INFO_EXPIRE_TIME);
 
-function checkFinished(Game $game) {
-    if (!$game || $game->status == GameStatus::FINISHED) {
+function checkFinished($game) {
+    if (!$game) {
+        die(toError('Game has not been started yet'));
+    }
+    if ($game->status == GameStatus::FINISHED) {
         die(toError('Game has been finished already'));
     }
 }
