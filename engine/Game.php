@@ -1,9 +1,7 @@
 <?php
 require_once "Round.php";
 require_once "GameStatus.php";
-require_once "../predis/autoload.php";
-Predis\Autoloader::register();
-
+require_once "common.php";
 
 class Game
 {
@@ -39,13 +37,42 @@ class Game
         }
     }
 
-    function finishRound() {
-        $this->round->endTime = time();
-        if ($this->roundNumber < Game::$ROUNDS_QUANTITY) {
-            $this->status = GameStatus::ROUND_TIMEOUT;
-        } else {
-            $this->status = GameStatus::FINISHED;
+    /*
+     * Check if game status must be updated and return true if it was
+     * parameter $startRound - to start new Round of game or not
+     */
+    function updateStatus($startRound = false)
+    {
+        if ($this->status == GameStatus::FINISHED) {
+            return false;
         }
+        if ($this->status == GameStatus::ROUND_TIMEOUT) {
+            if (milliTime() > $this->round->getNextRoundMilliTime() && $startRound
+                    || $this->roundNumber == Game::$ROUNDS_QUANTITY) {
+
+                $this->nextRound();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if ($this->status == GameStatus::ROUND) {
+            if (milliTime() > $this->round->getNextRoundMilliTime() && $startRound) {
+                $this->nextRound();
+                return true;
+            } elseif (milliTime() > $this->round->getRoundEndMilliTime() || $this->round->wereAnswersSent()) {
+                $this->finishRound();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function finishRound()
+    {
+        $this->round->endTime = milliTime();
+        $this->status = GameStatus::ROUND_TIMEOUT;
     }
 
     function nextRound()

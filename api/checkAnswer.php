@@ -7,20 +7,13 @@ try {
 
     checkGameStarted($redis, $userId);
     while (true) {
-        $game = getGameByUserId($redis, $userId);
+        $game = getUpdatedGame($redis, $userId);
         checkFinished($game);
 
-        $status = &$game->status;
-        $round = &$game->round;
-        if ($status == GameStatus::ROUND && (time() > $round->getRoundEndTime()
-                || $round->firstPlayerAnswer !== 0 && $round->secondPlayerAnswer !== 0)) {
-            $game->finishRound();
-            saveGame($redis, $game);
-        }
-
-        if ($status !== GameStatus::ROUND_TIMEOUT) {
+        if ($game->status !== GameStatus::ROUND_TIMEOUT) {
             sleep(1);
         } else {
+            $round = &$game->round;
             if ($userId == $game->firstPlayerId) {
                 $opponentId = $game->secondPlayerId;
                 $userAnswer = $round->firstPlayerAnswer;
@@ -39,7 +32,7 @@ try {
                 'user_answer' => $userAnswer,
                 'opponent_answer' => $opponentAnswer,
                 'opponent_id' => $opponentId,
-                'timeout_end_time' => $round->getTimeoutEndTime()
+                'timeout_end_time' => $round->getNextRoundMilliTime()
             )));
         }
     }

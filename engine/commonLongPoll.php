@@ -5,6 +5,8 @@ session_write_close();
 ignore_user_abort(false);
 set_time_limit(Game::$GAME_INFO_EXPIRE_TIME);
 
+const SLEEP_TIME = 1;
+
 function checkFinished($game) {
     if (!$game) {
         die(toError('Game has not been started yet'));
@@ -20,6 +22,3 @@ function checkGameStarted(Predis\Client $redis, $userId) {
         die(toError('User has not started a game'));
     }
 }
-
-
-?>

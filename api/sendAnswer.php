@@ -22,7 +22,7 @@ try {
     }
 
     $round = &$game->round;
-    if (time() > $round->getRoundEndTime()) {
+    if (milliTime() > $round->getRoundEndMilliTime()) {
         die(toError('Round has been finished, too late to send answer'));
     }
 

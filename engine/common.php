@@ -24,6 +24,10 @@ function toResponse(array $members)
     return json_encode($members, JSON_UNESCAPED_UNICODE);
 }
 
+function milliTime() {
+    return round(microtime(true) * 1000);
+}
+
 function toUserGameId($userId)
 {
     return 'user' . $userId . '_game';
@@ -36,8 +40,15 @@ function toGameId($gameId)
 
 function getGameByUserId(Predis\Client &$redis, $userId)
 {
-    $gameId = $redis->get(toUserGameId($userId));
-    return unserialize($redis->get(toGameId($gameId)));
+    return unserialize($redis->get(userIdToGameId($redis, $userId)));
+}
+
+function getUpdatedGame(Predis\Client &$redis, $userId, $startNewRoundIfPossible = false) {
+    $game = getGameByUserId($redis, $userId);
+    if ($game->updateStatus($startNewRoundIfPossible)) {
+        saveGame($redis, $game);
+    }
+    return $game;
 }
 
 function userIdToGameId(Predis\Client &$redis, $userId) {
@@ -47,5 +58,3 @@ function userIdToGameId(Predis\Client &$redis, $userId) {
 function saveGame(\Predis\Client &$redis, Game $game) {
     $redis->setex(userIdToGameId($redis, $game->firstPlayerId), Game::$GAME_INFO_EXPIRE_TIME, serialize($game));
 }
-
-?>

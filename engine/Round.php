@@ -1,11 +1,10 @@
 <?php
-require_once "../predis/autoload.php";
-Predis\Autoloader::register();
+require_once "common.php";
 
 class Round
 {
-    static $ROUND_DURATION = 12;
-    static $TIMEOUT_BETWEEN_ROUNDS = 5;
+    static $ROUND_DURATION_SEC = 12;
+    static $TIMEOUT_BETWEEN_ROUNDS_SEC = 5;
 
     var $question;
     var $answers;
@@ -31,8 +30,8 @@ class Round
             for ($i = 0; $correctAnswer !== $this->answers[$i]; $i++) ;
             $this->correctAnswerNumber = $i + 1;
 
-            $this->startTime = time();
-            $this->endTime = time() + 1000000;
+            $this->startTime = milliTime();
+            $this->endTime = milliTime() + 1000000000;
             $this->firstPlayerAnswer = 0;
             $this->secondPlayerAnswer = 0;
         } catch (Exception $e) {
@@ -40,11 +39,16 @@ class Round
         }
     }
 
-    function getRoundEndTime() {
-        return $this->startTime + Round::$ROUND_DURATION;
+    function wereAnswersSent() {
+        return $this->firstPlayerAnswer && $this->secondPlayerAnswer;
     }
 
-    function getTimeoutEndTime() {
-        return $this->endTime + Round::$TIMEOUT_BETWEEN_ROUNDS;
+    function getRoundEndMilliTime() {
+        return $this->startTime + Round::$ROUND_DURATION_SEC * 1000;
+    }
+
+    function getNextRoundMilliTime() {
+        return min($this->startTime + (Round::$ROUND_DURATION_SEC + Round::$TIMEOUT_BETWEEN_ROUNDS_SEC) * 1000,
+                    $this->endTime + Round::$TIMEOUT_BETWEEN_ROUNDS_SEC * 1000);
     }
 }

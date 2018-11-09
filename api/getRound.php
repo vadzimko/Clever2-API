@@ -8,21 +8,14 @@ try {
     checkGameStarted($redis, $userId);
     while (true) {
         if ($redis->sismember('waiting_list', $userId)) {
-            sleep(1);
+            sleep(SLEEP_TIME);
             continue;
         }
-        $game = getGameByUserId($redis, $userId);
+        $game = getUpdatedGame($redis, $userId, true);
         checkFinished($game);
 
-        $status = &$game->status;
-        $round = &$game->round;
-        if ($status == GameStatus::ROUND_TIMEOUT && time() > $round->getTimeoutEndTime()) {
-            $game->nextRound();
-            saveGame($redis, $game);
-        }
-
-        if ($status !== GameStatus::ROUND) {
-            sleep(1);
+        if ($game->status !== GameStatus::ROUND) {
+            sleep(SLEEP_TIME);
         } else {
             $round = &$game->round;
             if ($userId == $game->firstPlayerId) {
@@ -36,7 +29,7 @@ try {
                 'question' => $round->question,
                 'answers' => $round->answers,
                 'opponent_id' => $opponentId,
-                'end_time' => $round->getRoundEndTime()
+                'end_time' => $round->getRoundEndMilliTime()
             )));
         }
     }
