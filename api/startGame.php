@@ -9,7 +9,7 @@ try {
     if ($redis->sismember("waiting_list", $userId)) {
         die(toError('This user is already waiting for a game'));
     }
-    $game = getGameByUserId($redis, $userId);
+    $game = getUpdatedGame($redis, $userId);
     if ($game && $game->status != GameStatus::FINISHED) {
         die(toError('This user is already playing a game'));
     }

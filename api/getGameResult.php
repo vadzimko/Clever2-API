@@ -6,7 +6,7 @@ try {
     $userId = $_REQUEST["user_id"];
 
     checkUserId($userId);
-    $game = getGameByUserId($redis, $userId);
+    $game = getUpdatedGame($redis, $userId);
     if ($redis->sismember("waiting_list", $userId) || !$game) {
         die(toResponse(array(
             'game_status' => 'not_started'
@@ -18,7 +18,6 @@ try {
         )));
     }
 
-    $game = getGameByUserId($redis, $userId);
     $response = array(
         'game_status' => 'finished',
         'has_winner' => $game->firstPlayerScore != $game->secondPlayerScore
