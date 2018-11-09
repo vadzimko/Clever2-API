@@ -37,18 +37,14 @@ class Game
         }
     }
 
-    /*
-     * Check if game status must be updated and return true if it was
-     * parameter $startRound - to start new Round of game or not
-     */
     function updateStatus($startRound = false)
     {
         if ($this->status == GameStatus::FINISHED) {
             return false;
         }
         if ($this->status == GameStatus::ROUND_TIMEOUT) {
-            if (milliTime() > $this->round->getNextRoundMilliTime() && $startRound
-                    || $this->roundNumber == Game::$ROUNDS_QUANTITY) {
+            if (milliTime() > $this->round->getNextRoundMilliTime() && ($startRound
+                    || $this->roundNumber == Game::$ROUNDS_QUANTITY)) {
 
                 $this->nextRound();
                 return true;
