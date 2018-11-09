@@ -14,8 +14,8 @@ try {
         die(toError('This user is already playing a game'));
     }
 
-    if ($redis->scard('waiting_list') > 0) {
-        $opponentId = $redis->spop('waiting_list');
+    $opponentId = $redis->spop('waiting_list');
+    if ($opponentId != NULL) {
         if ($redis->exists('game_id')) {
             $redis->incr('game_id');
             $gameId = $redis->get('game_id');
