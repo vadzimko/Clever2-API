@@ -5,6 +5,7 @@ try {
     $redis = new Predis\Client();
     $userId = $_REQUEST["user_id"];
     $answerFromRequest = $_REQUEST["answer"];
+    $answerRoundNumber = $_REQUEST["round_number"];
 
     checkUserId($userId);
     if (!$answerFromRequest || !(1 <= $answerFromRequest && $answerFromRequest <= 3)) {
@@ -13,19 +14,17 @@ try {
         die(toError('User has not started a game'));
     }
 
-    $game = getGameByUserId($redis, $userId);
+    $game = getUpdatedGame($redis, $userId);
     $status = $game->status;
     if ($status == GameStatus::FINISHED) {
         die(toError('Game has been finished already'));
     } elseif ($status == GameStatus::ROUND_TIMEOUT) {
         die(toError('Round has been finished and new round has not been started'));
+    } elseif ($answerRoundNumber != $game->roundNumber) {
+        die(toError('Answer was sent too late, new round has been started already'));
     }
 
     $round = &$game->round;
-    if (milliTime() > $round->getRoundEndMilliTime()) {
-        die(toError('Round has been finished, too late to send answer'));
-    }
-
     if ($userId == $game->firstPlayerId) {
         $userAnswer = &$round->firstPlayerAnswer;
         $userScore = &$game->firstPlayerScore;
@@ -39,12 +38,12 @@ try {
     } else {
         $userAnswer = $answerFromRequest;
         if ($userAnswer == $round->correctAnswerNumber) {
-            $userScore += 1;
+            $userScore++;
         }
 
         saveGame($redis, $game);
         die(toResponse(array(
-            'comment' => 'answer have been accepted'
+            'comment' => 'answer has been accepted'
         )));
     }
 } catch (Exception $e) {
