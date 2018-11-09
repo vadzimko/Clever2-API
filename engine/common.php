@@ -5,7 +5,7 @@ Predis\Autoloader::register();
 header('Content-Type: application/json');
 
 function checkUserId($userId) {
-    if (!$userId) {
+    if ($userId == NULL) {
         die(toError('Request must contain parameter \'user_id\''));
     }
 }
