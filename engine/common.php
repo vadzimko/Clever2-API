@@ -15,13 +15,13 @@ function toError($message)
     return json_encode(array(
         'status' => 'Failed',
         'comment' => $message
-    ));
+    ), JSON_UNESCAPED_UNICODE);
 }
 
 function toResponse(array $members)
 {
     $members['status'] = 'OK';
-    return json_encode($members);
+    return json_encode($members, JSON_UNESCAPED_UNICODE);
 }
 
 function toUserGameId($userId)
