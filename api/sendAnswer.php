@@ -8,15 +8,17 @@ try {
     $answerRoundNumber = $_REQUEST["round_number"];
 
     checkUserId($userId);
-    if (!$answerFromRequest || !(1 <= $answerFromRequest && $answerFromRequest <= 3)) {
+    if ($answerFromRequest == NULL || !(1 <= $answerFromRequest && $answerFromRequest <= 3)) {
         die(toError('Request must contain parameter \'answer\' - integer from [1; 3]'));
-    } elseif (!$redis->exists(toUserGameId($userId))) {
-        die(toError('User has not started a game'));
     } elseif ($answerRoundNumber == NULL || !(1 <= $answerRoundNumber && $answerRoundNumber <= Game::$ROUNDS_QUANTITY)) {
         die(toError('Request must contain parameter \'round_number\'- integer from [1; ' . Game::$ROUNDS_QUANTITY . ']'));
     }
 
     $game = getUpdatedGame($redis, $userId);
+    if (!$game) {
+        die(toError('User has not started a game'));
+    }
+
     $status = $game->status;
     if ($status == GameStatus::FINISHED) {
         die(toError('Game has been finished already'));
