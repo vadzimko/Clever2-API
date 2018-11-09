@@ -45,7 +45,7 @@ function getGameByUserId(Predis\Client &$redis, $userId)
 
 function getUpdatedGame(Predis\Client &$redis, $userId, $startNewRoundIfPossible = false) {
     $game = getGameByUserId($redis, $userId);
-    if ($game->updateStatus($startNewRoundIfPossible)) {
+    if ($game && $game->updateStatus($startNewRoundIfPossible)) {
         saveGame($redis, $game);
     }
     return $game;
