@@ -14,14 +14,7 @@ try {
         die(toError('This user is already playing a game'));
     }
 
-    if ($redis->scard('waiting_list') == 0) {
-        $redis->sadd('waiting_list', $userId);
-
-        die(toResponse(array(
-            'started' => false,
-            'comment' => 'Successfully added to queue, waiting for opponent'
-        )));
-    } else {
+    if ($redis->scard('waiting_list') > 0) {
         $opponentId = $redis->spop('waiting_list');
         if ($redis->exists('game_id')) {
             $redis->incr('game_id');
@@ -38,6 +31,13 @@ try {
 
         die(toResponse(array(
             'started' => true
+        )));
+    } else {
+        $redis->sadd('waiting_list', $userId);
+
+        die(toResponse(array(
+            'started' => false,
+            'comment' => 'Successfully added to queue, waiting for opponent'
         )));
     }
 } catch (Exception $e) {
