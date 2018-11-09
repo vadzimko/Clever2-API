@@ -12,6 +12,8 @@ try {
         die(toError('Request must contain parameter \'answer\' - integer from [1; 3]'));
     } elseif (!$redis->exists(toUserGameId($userId))) {
         die(toError('User has not started a game'));
+    } elseif ($answerRoundNumber == NULL || !(1 <= $answerRoundNumber && $answerRoundNumber <= Game::$ROUNDS_QUANTITY)) {
+        die(toError('Request must contain parameter \'round_number\'- integer from [1; ' . Game::$ROUNDS_QUANTITY . ']'));
     }
 
     $game = getUpdatedGame($redis, $userId);
