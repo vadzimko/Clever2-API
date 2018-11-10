@@ -56,5 +56,5 @@ function userIdToGameId(Predis\Client &$redis, $userId) {
 }
 
 function saveGame(\Predis\Client &$redis, Game $game) {
-    $redis->setex(userIdToGameId($redis, $game->firstPlayerId), Game::$GAME_INFO_EXPIRE_TIME, serialize($game));
+    $redis->setex(userIdToGameId($redis, $game->firstPlayerId), Game::$GAME_INFO_EXPIRE_TIME_SEC, serialize($game));
 }

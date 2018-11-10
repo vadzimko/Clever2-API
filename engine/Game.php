@@ -5,10 +5,11 @@ require_once "common.php";
 
 class Game
 {
-    static $GAME_INFO_EXPIRE_TIME = 3600;
+    static $GAME_INFO_EXPIRE_TIME_SEC = 3600;
     static $ROUNDS_QUANTITY = 7;
     static $QUESTIONS_FILE_NAME = '../engine/questions.csv';
     static $QUESTIONS_COUNTER_NAME = 'questions_counter';
+    static $QUESTIONS_LOADING_STATUS_NAME = 'loading_questions_to_redis_in_process';
 
     var $firstPlayerId;
     var $firstPlayerScore;
@@ -88,10 +89,10 @@ class Game
         $redis = new Predis\Client();
         $this->checkQuestionsExistence($redis);
 
-        $questions_counter = $redis->get(Game::$QUESTIONS_COUNTER_NAME);
+        $questionsNumber = $redis->get(Game::$QUESTIONS_COUNTER_NAME);
         $questionIdList = array();
 
-        $step = $questions_counter / Game::$ROUNDS_QUANTITY;
+        $step = $questionsNumber / Game::$ROUNDS_QUANTITY;
         for ($i = 0; $i < Game::$ROUNDS_QUANTITY; $i++) {
             $questionIdList[$i] = rand(
                 $step * $i + 1,
@@ -103,10 +104,20 @@ class Game
 
     private function checkQuestionsExistence(Predis\Client &$redis)
     {
-        if (!$redis->exists(Game::$QUESTIONS_COUNTER_NAME) || $redis->get(Game::$QUESTIONS_COUNTER_NAME) == 0) {
+        if ($redis->exists(Game::$QUESTIONS_COUNTER_NAME) && $redis->get(Game::$QUESTIONS_COUNTER_NAME) > 0) {
+            return;
+        }
+
+        if ($redis->get(Game::$QUESTIONS_LOADING_STATUS_NAME) == true) {
+            while ($redis->exists(Game::$QUESTIONS_LOADING_STATUS_NAME) == true) {
+                sleep(1);
+            }
+        } else {
+            $redis->set(Game::$QUESTIONS_LOADING_STATUS_NAME, true);
             $file = fopen(Game::$QUESTIONS_FILE_NAME, "r");
 
             if (!$file) {
+                $redis->del(Game::$QUESTIONS_LOADING_STATUS_NAME);
                 throw new Exception('Can not load questions');
             }
 
@@ -119,11 +130,12 @@ class Game
                 }
                 $index++;
             }
+            if ($index < Game::$ROUNDS_QUANTITY) {
+                $redis->flushall();
+                throw new Exception('Not enough questions to create a game');
+            }
             $redis->set(Game::$QUESTIONS_COUNTER_NAME, $index - 1);
-        }
-
-        if ($redis->get(Game::$QUESTIONS_COUNTER_NAME) < Game::$ROUNDS_QUANTITY) {
-            throw new Exception('Not enough questions to create a game');
+            $redis->del(Game::$QUESTIONS_LOADING_STATUS_NAME);
         }
     }
 }
