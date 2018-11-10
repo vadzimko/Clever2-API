@@ -1,21 +1,16 @@
 <!DOCTYPE html>
-<!-- Template by quackit.com -->
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>API</title>
     <style type="text/css">
-
-        /* Layout */
         body {
             min-width: 630px;
         }
-
         #container {
             padding-left: 200px;
             padding-right: 190px;
         }
-
         #container .column {
             position: relative;
             float: left;
@@ -30,16 +25,6 @@
             overflow: hidden;
         }
 
-        * html #footer-wrapper {
-            float: left;
-            position: relative;
-            width: 100%;
-            padding-bottom: 10010px;
-            margin-bottom: -10000px;
-            background: #fff;
-        }
-
-        /* Aesthetics */
         body {
             margin: 0;
             padding: 0;
@@ -62,7 +47,7 @@
             text-decoration: none;
         }
 
-        #header, #footer {
+        #header{
             font-size: large;
             padding: 0.3em;
             background: #25cace;
@@ -73,7 +58,7 @@
 
 <body>
 
-<header id="header" style="text-align: center; font-size: 2rem"><p><font color="white">API</font> </p></header>
+<header id="header" style="text-align: center; font-size: 2rem"><p><span style="color: white; ">API Documentation</span> </p></header>
 
 <div id="container">
 
@@ -82,7 +67,7 @@
 
             <h1>Общая информация</h1>
             <p>
-                Для вызова метода пошлите HTTP-запрос по адресу <b>http://clever.vadzimko.info/api/{methodName}</b>.
+                Для вызова метода отправьте HTTP-запрос по адресу <b>http://clever.vadzimko.info/api/{methodName}</b>.
                 Все методы должны иметь обязательный параметр user_id и некоторые другие параметры (в зависимости от
                 метода).
                 Ответом на каждый запрос является JSON-объект с полями: <br>
@@ -179,6 +164,7 @@
                     и может начаться новый раунд (новый раунд начнется, как только один из соперников пошлет getRound на сервер)
                 </li>
             </ul>
+            <i>В user_answer и opponent_answer 0 обозначает, что игрок не прислал никакой ответ на раунд.</i>
         </article>
 
 
