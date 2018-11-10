@@ -30,18 +30,16 @@ try {
 
     $round = &$game->round;
     if ($userId == $game->firstPlayerId) {
-        $userAnswer = &$round->firstPlayerAnswer;
         $userScore = &$game->firstPlayerScore;
     } else {
-        $userAnswer = &$round->secondPlayerAnswer;
         $userScore = &$game->secondPlayerScore;
     }
 
-    if ($userAnswer !== 0) {
+    if (getAnswerByUserId($redis, $userId) !== 0) {
         die(toError('This player has sent answer in this round already'));
     } else {
-        $userAnswer = $answerFromRequest;
-        if ($userAnswer == $round->correctAnswerNumber) {
+        setAnswerByUserId($redis, $userId, $answerFromRequest);
+        if ($answerFromRequest == $round->correctAnswerNumber) {
             $userScore++;
         }
 

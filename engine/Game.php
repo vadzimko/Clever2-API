@@ -58,7 +58,11 @@ class Game
             if (milliTime() > $this->round->getNextRoundMilliTime() && $startRound) {
                 $this->nextRound();
                 return true;
-            } elseif (milliTime() > $this->round->getRoundEndMilliTime() || $this->round->wereAnswersSent()) {
+            }
+
+            $redis = new Predis\Client();
+            if (milliTime() > $this->round->getRoundEndMilliTime() || getAnswerByUserId($redis, $this->firstPlayerId
+                    && getAnswerByUserId($redis, $this->secondPlayerId))) {
                 $this->finishRound();
                 return true;
             }
@@ -66,13 +70,13 @@ class Game
         return false;
     }
 
-    function finishRound()
+    private function finishRound()
     {
         $this->round->endTime = milliTime();
         $this->status = GameStatus::ROUND_TIMEOUT;
     }
 
-    function nextRound()
+    private function nextRound()
     {
         $this->roundNumber++;
         if ($this->roundNumber > Game::ROUNDS_QUANTITY) {

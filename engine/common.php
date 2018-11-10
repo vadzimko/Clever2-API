@@ -42,6 +42,14 @@ function getGameIdFromParticipantsId($id1, $id2) {
     return 'game' . $id1 . '_' . $id2;
 }
 
+function getAnswerByUserId(Predis\Client &$redis, $userId) {
+    return $redis->get('user' . $userId . '_answer');
+}
+
+function setAnswerByUserId(Predis\Client &$redis, $userId, $answer) {
+    return $redis->set('user' . $userId . '_answer', $answer);
+}
+
 function getGameByUserId(Predis\Client &$redis, $userId)
 {
     return unserialize($redis->get(userIdToGameId($redis, $userId)));

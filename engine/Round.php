@@ -13,10 +13,8 @@ class Round
 
     var $startTime;
     var $endTime;
-    var $firstPlayerAnswer;
-    var $secondPlayerAnswer;
 
-    public function __construct($questionId)
+    public function __construct($questionId, $firstPlayerId, $secondPlayerId)
     {
         try {
             $redis = new Predis\Client();
@@ -32,15 +30,12 @@ class Round
 
             $this->startTime = milliTime();
             $this->endTime = milliTime() + 1000000000;
-            $this->firstPlayerAnswer = 0;
-            $this->secondPlayerAnswer = 0;
+
+            setAnswerByUserId($redis, $firstPlayerId, 0);
+            setAnswerByUserId($redis, $secondPlayerId, 0);
         } catch (Exception $e) {
             die($e->getMessage());
         }
-    }
-
-    function wereAnswersSent() {
-        return $this->firstPlayerAnswer && $this->secondPlayerAnswer;
     }
 
     function getRoundEndMilliTime() {
