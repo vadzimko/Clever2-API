@@ -8,7 +8,7 @@ class Game
     const GAME_INFO_EXPIRE_TIME_SEC = 3600;
     const ROUNDS_QUANTITY = 7;
     const QUESTIONS_FILE_NAME = '../engine/questions.csv';
-    const QUESTIONS_COUNTER_NAME = 'questions_counter';
+    const QUESTIONS_COUNTER = 'questions_counter';
     const QUESTIONS_LOADING = 'loading_questions_to_redis_in_process';
 
     var $firstPlayerId;
@@ -43,36 +43,28 @@ class Game
         if ($this->status == GameStatus::FINISHED) {
             return false;
         }
-        if ($this->status == GameStatus::ROUND_TIMEOUT) {
-            if (milliTime() > $this->round->getNextRoundMilliTime() && ($startRound
-                    || $this->roundNumber == Game::ROUNDS_QUANTITY)) {
 
-                $this->nextRound();
-                return true;
-            } else {
-                return false;
-            }
+        if (milliTime() > $this->round->getNextRoundMilliTime()
+            && ($startRound || $this->roundNumber == Game::ROUNDS_QUANTITY)) {
+
+            $this->nextRound();
+            return true;
         }
 
-        if ($this->status == GameStatus::ROUND) {
-            if (milliTime() > $this->round->getNextRoundMilliTime() && $startRound) {
-                $this->nextRound();
-                return true;
-            }
+        $redis = new Predis\Client();
+        if ($this->status == GameStatus::ROUND && (milliTime() > $this->round->getRoundEndMilliTime() ||
+            getAnswerByUserId($redis, $this->firstPlayerId) && getAnswerByUserId($redis, $this->secondPlayerId))) {
 
-            $redis = new Predis\Client();
-            if (milliTime() > $this->round->getRoundEndMilliTime() || getAnswerByUserId($redis, $this->firstPlayerId)
-                    && getAnswerByUserId($redis, $this->secondPlayerId)) {
-                $this->finishRound();
-                return true;
-            }
+            $this->finishRound();
+            return true;
         }
+
         return false;
     }
 
     private function finishRound()
     {
-        $this->round->endTime = milliTime();
+        $this->round->endTime = min(milliTime(), $this->round->startTime + Round::ROUND_DURATION_SEC * 1000);
         $this->status = GameStatus::ROUND_TIMEOUT;
     }
 
@@ -81,7 +73,6 @@ class Game
         $this->roundNumber++;
         if ($this->roundNumber > Game::ROUNDS_QUANTITY) {
             $this->status = GameStatus::FINISHED;
-            $this->round = NULL;
         } else {
             $this->status = GameStatus::ROUND;
             $this->round = new Round($this->gameQuestionsId[$this->roundNumber - 1], $this->firstPlayerId, $this->secondPlayerId);
@@ -93,7 +84,7 @@ class Game
         $redis = new Predis\Client();
         $this->checkQuestionsExistence($redis);
 
-        $questionsNumber = $redis->get(Game::QUESTIONS_COUNTER_NAME);
+        $questionsNumber = $redis->get(Game::QUESTIONS_COUNTER);
         $questionIdList = array();
 
         $step = $questionsNumber / Game::ROUNDS_QUANTITY;
@@ -108,7 +99,7 @@ class Game
 
     private function checkQuestionsExistence(Predis\Client &$redis)
     {
-        if ($redis->exists(Game::QUESTIONS_COUNTER_NAME) && $redis->get(Game::QUESTIONS_COUNTER_NAME) > 0) {
+        if ($redis->exists(Game::QUESTIONS_COUNTER) && $redis->get(Game::QUESTIONS_COUNTER) > 0) {
             return;
         }
 
@@ -138,7 +129,7 @@ class Game
                 $redis->flushall();
                 throw new Exception('Not enough questions to create a game');
             }
-            $redis->set(Game::QUESTIONS_COUNTER_NAME, $index - 1);
+            $redis->set(Game::QUESTIONS_COUNTER, $index - 1);
             $redis->del(Game::QUESTIONS_LOADING);
         }
     }
