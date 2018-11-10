@@ -16,12 +16,12 @@ try {
             $round = &$game->round;
             if ($userId == $game->firstPlayerId) {
                 $opponentId = $game->secondPlayerId;
-                $userAnswer = $round->firstPlayerAnswer;
-                $opponentAnswer = $round->secondPlayerAnswer;
+                $userAnswer = getAnswerByUserId($redis, $game->firstPlayerId);
+                $opponentAnswer = getAnswerByUserId($redis, $game->secondPlayerId);
             } else {
                 $opponentId = $game->firstPlayerId;
-                $userAnswer = $round->secondPlayerAnswer;
-                $opponentAnswer = $round->firstPlayerAnswer;
+                $opponentAnswer = getAnswerByUserId($redis, $game->firstPlayerId);
+                $userAnswer = getAnswerByUserId($redis, $game->secondPlayerId);
             }
             die(toResponse(array(
                 'round_status' => 'finished',
