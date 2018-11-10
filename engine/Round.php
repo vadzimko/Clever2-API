@@ -3,8 +3,8 @@ require_once "common.php";
 
 class Round
 {
-    static $ROUND_DURATION_SEC = 12;
-    static $TIMEOUT_BETWEEN_ROUNDS_SEC = 5;
+    const ROUND_DURATION_SEC = 12;
+    const TIMEOUT_BETWEEN_ROUNDS_SEC = 5;
 
     var $question;
     var $answers;
@@ -44,11 +44,11 @@ class Round
     }
 
     function getRoundEndMilliTime() {
-        return $this->startTime + Round::$ROUND_DURATION_SEC * 1000;
+        return $this->startTime + Round::ROUND_DURATION_SEC * 1000;
     }
 
     function getNextRoundMilliTime() {
-        return min($this->startTime + (Round::$ROUND_DURATION_SEC + Round::$TIMEOUT_BETWEEN_ROUNDS_SEC) * 1000,
-                    $this->endTime + Round::$TIMEOUT_BETWEEN_ROUNDS_SEC * 1000);
+        return min($this->startTime + (Round::ROUND_DURATION_SEC + Round::TIMEOUT_BETWEEN_ROUNDS_SEC) * 1000,
+                    $this->endTime + Round::TIMEOUT_BETWEEN_ROUNDS_SEC * 1000);
     }
 }

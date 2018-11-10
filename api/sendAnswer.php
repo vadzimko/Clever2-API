@@ -10,8 +10,8 @@ try {
     checkUserId($userId);
     if ($answerFromRequest == NULL || !(1 <= $answerFromRequest && $answerFromRequest <= 3)) {
         die(toError('Request must contain parameter \'answer\' - integer from [1; 3]'));
-    } elseif ($answerRoundNumber == NULL || !(1 <= $answerRoundNumber && $answerRoundNumber <= Game::$ROUNDS_QUANTITY)) {
-        die(toError('Request must contain parameter \'round_number\'- integer from [1; ' . Game::$ROUNDS_QUANTITY . ']'));
+    } elseif ($answerRoundNumber == NULL || !(1 <= $answerRoundNumber && $answerRoundNumber <= Game::ROUNDS_QUANTITY)) {
+        die(toError('Request must contain parameter \'round_number\'- integer from [1; ' . Game::ROUNDS_QUANTITY . ']'));
     }
 
     $game = getUpdatedGame($redis, $userId);

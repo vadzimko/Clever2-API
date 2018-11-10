@@ -5,11 +5,11 @@ require_once "common.php";
 
 class Game
 {
-    static $GAME_INFO_EXPIRE_TIME_SEC = 3600;
-    static $ROUNDS_QUANTITY = 7;
-    static $QUESTIONS_FILE_NAME = '../engine/questions.csv';
-    static $QUESTIONS_COUNTER_NAME = 'questions_counter';
-    static $QUESTIONS_LOADING_STATUS_NAME = 'loading_questions_to_redis_in_process';
+    const GAME_INFO_EXPIRE_TIME_SEC = 3600;
+    const ROUNDS_QUANTITY = 7;
+    const QUESTIONS_FILE_NAME = '../engine/questions.csv';
+    const QUESTIONS_COUNTER_NAME = 'questions_counter';
+    const QUESTIONS_LOADING = 'loading_questions_to_redis_in_process';
 
     var $firstPlayerId;
     var $firstPlayerScore;
@@ -45,7 +45,7 @@ class Game
         }
         if ($this->status == GameStatus::ROUND_TIMEOUT) {
             if (milliTime() > $this->round->getNextRoundMilliTime() && ($startRound
-                    || $this->roundNumber == Game::$ROUNDS_QUANTITY)) {
+                    || $this->roundNumber == Game::ROUNDS_QUANTITY)) {
 
                 $this->nextRound();
                 return true;
@@ -75,7 +75,7 @@ class Game
     function nextRound()
     {
         $this->roundNumber++;
-        if ($this->roundNumber > Game::$ROUNDS_QUANTITY) {
+        if ($this->roundNumber > Game::ROUNDS_QUANTITY) {
             $this->status = GameStatus::FINISHED;
             $this->round = NULL;
         } else {
@@ -89,11 +89,11 @@ class Game
         $redis = new Predis\Client();
         $this->checkQuestionsExistence($redis);
 
-        $questionsNumber = $redis->get(Game::$QUESTIONS_COUNTER_NAME);
+        $questionsNumber = $redis->get(Game::QUESTIONS_COUNTER_NAME);
         $questionIdList = array();
 
-        $step = $questionsNumber / Game::$ROUNDS_QUANTITY;
-        for ($i = 0; $i < Game::$ROUNDS_QUANTITY; $i++) {
+        $step = $questionsNumber / Game::ROUNDS_QUANTITY;
+        for ($i = 0; $i < Game::ROUNDS_QUANTITY; $i++) {
             $questionIdList[$i] = rand(
                 $step * $i + 1,
                 $step * ($i + 1)
@@ -104,20 +104,20 @@ class Game
 
     private function checkQuestionsExistence(Predis\Client &$redis)
     {
-        if ($redis->exists(Game::$QUESTIONS_COUNTER_NAME) && $redis->get(Game::$QUESTIONS_COUNTER_NAME) > 0) {
+        if ($redis->exists(Game::QUESTIONS_COUNTER_NAME) && $redis->get(Game::QUESTIONS_COUNTER_NAME) > 0) {
             return;
         }
 
-        if ($redis->get(Game::$QUESTIONS_LOADING_STATUS_NAME) == true) {
-            while ($redis->exists(Game::$QUESTIONS_LOADING_STATUS_NAME) == true) {
+        if ($redis->get(Game::QUESTIONS_LOADING) == true) {
+            while ($redis->exists(Game::QUESTIONS_LOADING) == true) {
                 sleep(1);
             }
         } else {
-            $redis->set(Game::$QUESTIONS_LOADING_STATUS_NAME, true);
-            $file = fopen(Game::$QUESTIONS_FILE_NAME, "r");
+            $redis->set(Game::QUESTIONS_LOADING, true);
+            $file = fopen(Game::QUESTIONS_FILE_NAME, "r");
 
             if (!$file) {
-                $redis->del(Game::$QUESTIONS_LOADING_STATUS_NAME);
+                $redis->del(Game::QUESTIONS_LOADING);
                 throw new Exception('Can not load questions');
             }
 
@@ -130,12 +130,12 @@ class Game
                 }
                 $index++;
             }
-            if ($index < Game::$ROUNDS_QUANTITY) {
+            if ($index < Game::ROUNDS_QUANTITY) {
                 $redis->flushall();
                 throw new Exception('Not enough questions to create a game');
             }
-            $redis->set(Game::$QUESTIONS_COUNTER_NAME, $index - 1);
-            $redis->del(Game::$QUESTIONS_LOADING_STATUS_NAME);
+            $redis->set(Game::QUESTIONS_COUNTER_NAME, $index - 1);
+            $redis->del(Game::QUESTIONS_LOADING);
         }
     }
 }

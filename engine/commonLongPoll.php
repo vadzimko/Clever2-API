@@ -3,7 +3,7 @@ require_once "../engine/common.php";
 
 session_write_close();
 ignore_user_abort(false);
-set_time_limit(Game::$GAME_INFO_EXPIRE_TIME_SEC);
+set_time_limit(Game::GAME_INFO_EXPIRE_TIME_SEC);
 
 const SLEEP_TIME = 1;
 

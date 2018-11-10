@@ -38,6 +38,10 @@ function toGameId($gameId)
     return 'game' . $gameId;
 }
 
+function getGameIdFromParticipantsId($id1, $id2) {
+    return 'game' . $id1 . '_' . $id2;
+}
+
 function getGameByUserId(Predis\Client &$redis, $userId)
 {
     return unserialize($redis->get(userIdToGameId($redis, $userId)));
@@ -56,5 +60,5 @@ function userIdToGameId(Predis\Client &$redis, $userId) {
 }
 
 function saveGame(\Predis\Client &$redis, Game $game) {
-    $redis->setex(userIdToGameId($redis, $game->firstPlayerId), Game::$GAME_INFO_EXPIRE_TIME_SEC, serialize($game));
+    $redis->setex(userIdToGameId($redis, $game->firstPlayerId), Game::GAME_INFO_EXPIRE_TIME_SEC, serialize($game));
 }

@@ -15,14 +15,15 @@ try {
     }
 
     $opponentId = $redis->spop('waiting_list');
-    if ($opponentId != NULL) {
-        if ($redis->exists('game_id')) {
-            $redis->incr('game_id');
-            $gameId = $redis->get('game_id');
-        } else {
-            $redis->set('game_id', 1);
-            $gameId = 1;
-        }
+    if ($opponentId == NULL) {
+        $redis->sadd('waiting_list', $userId);
+
+        die(toResponse(array(
+            'started' => false,
+            'comment' => 'Successfully added to queue, waiting for opponent'
+        )));
+    } else {
+        $gameId = getGameIdFromParticipantsId($userId, $opponentId);
 
         $redis->set(toUserGameId($userId), $gameId);
         $redis->set(toUserGameId($opponentId), $gameId);
@@ -31,13 +32,6 @@ try {
 
         die(toResponse(array(
             'started' => true
-        )));
-    } else {
-        $redis->sadd('waiting_list', $userId);
-
-        die(toResponse(array(
-            'started' => false,
-            'comment' => 'Successfully added to queue, waiting for opponent'
         )));
     }
 } catch (Exception $e) {
