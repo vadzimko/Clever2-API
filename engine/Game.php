@@ -47,19 +47,33 @@ class Game
         if (milliTime() > $this->round->getNextRoundMilliTime()
             && ($startRound || $this->roundNumber == Game::ROUNDS_QUANTITY)) {
 
+            if ($this->status == GameStatus::ROUND) {
+                $this->addPoints();
+            }
             $this->nextRound();
             return true;
         }
 
         $redis = new Predis\Client();
         if ($this->status == GameStatus::ROUND && (milliTime() > $this->round->getRoundEndMilliTime() ||
-            getAnswerByUserId($redis, $this->firstPlayerId) && getAnswerByUserId($redis, $this->secondPlayerId))) {
+                getAnswerByUserId($redis, $this->firstPlayerId) && getAnswerByUserId($redis, $this->secondPlayerId))) {
 
+            $this->addPoints();
             $this->finishRound();
             return true;
         }
-
         return false;
+    }
+
+    private function addPoints()
+    {
+        $redis = new Predis\Client();
+        if (getAnswerByUserId($redis, $this->firstPlayerId) == $this->round->correctAnswerNumber) {
+            $this->firstPlayerScore++;
+        }
+        if (getAnswerByUserId($redis, $this->secondPlayerId) == $this->round->correctAnswerNumber) {
+            $this->secondPlayerScore++;
+        }
     }
 
     private function finishRound()

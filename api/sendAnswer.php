@@ -28,22 +28,10 @@ try {
         die(toError('Answer was sent too late, new round has been started already'));
     }
 
-    $round = &$game->round;
-    if ($userId == $game->firstPlayerId) {
-        $userScore = &$game->firstPlayerScore;
-    } else {
-        $userScore = &$game->secondPlayerScore;
-    }
-
     if (getAnswerByUserId($redis, $userId) != 0) {
         die(toError('This player has sent answer in this round already'));
     } else {
         setAnswerByUserId($redis, $userId, $answerFromRequest);
-        if ($answerFromRequest == $round->correctAnswerNumber) {
-            $userScore++;
-        }
-
-        saveGame($redis, $game);
         die(toResponse(array(
             'comment' => 'answer has been accepted'
         )));
