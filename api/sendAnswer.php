@@ -35,7 +35,7 @@ try {
         $userScore = &$game->secondPlayerScore;
     }
 
-    if (getAnswerByUserId($redis, $userId) !== 0) {
+    if (getAnswerByUserId($redis, $userId) != 0) {
         die(toError('This player has sent answer in this round already'));
     } else {
         setAnswerByUserId($redis, $userId, $answerFromRequest);

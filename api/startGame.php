@@ -27,9 +27,9 @@ try {
 
         $redis->set(toUserGameId($userId), $gameId);
         $redis->set(toUserGameId($opponentId), $gameId);
+
         $game = new Game($userId, $opponentId);
         saveGame($redis, $game);
-
         die(toResponse(array(
             'started' => true
         )));

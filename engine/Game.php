@@ -61,8 +61,8 @@ class Game
             }
 
             $redis = new Predis\Client();
-            if (milliTime() > $this->round->getRoundEndMilliTime() || getAnswerByUserId($redis, $this->firstPlayerId
-                    && getAnswerByUserId($redis, $this->secondPlayerId))) {
+            if (milliTime() > $this->round->getRoundEndMilliTime() || getAnswerByUserId($redis, $this->firstPlayerId)
+                    && getAnswerByUserId($redis, $this->secondPlayerId)) {
                 $this->finishRound();
                 return true;
             }
@@ -84,7 +84,7 @@ class Game
             $this->round = NULL;
         } else {
             $this->status = GameStatus::ROUND;
-            $this->round = new Round($this->gameQuestionsId[$this->roundNumber - 1]);
+            $this->round = new Round($this->gameQuestionsId[$this->roundNumber - 1], $this->firstPlayerId, $this->secondPlayerId);
         }
     }
 
