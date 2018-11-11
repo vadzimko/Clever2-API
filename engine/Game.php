@@ -117,8 +117,8 @@ class Game
             return;
         }
 
-        if ($redis->get(Game::QUESTIONS_LOADING) == true) {
-            while ($redis->exists(Game::QUESTIONS_LOADING) == true) {
+        if ($redis->get(Game::QUESTIONS_LOADING)) {
+            while ($redis->exists(Game::QUESTIONS_LOADING)) {
                 sleep(1);
             }
         } else {
@@ -134,7 +134,8 @@ class Game
             while (($column = fgetcsv($file, 10000, ";")) !== FALSE) {
                 if ($index > 0 && sizeof($column) >= 5) {
                     $redis->set("question" . $index, $column[0]);
-                    $redis->lpush("answers" . $index, array($column[1], $column[2], $column[3]));
+                    $redis->del("answers" . $index);
+                    $redis->rpush("answers" . $index, array($column[1], $column[2], $column[3]));
                     $redis->set("theme" . $index, $column[4]);
                 }
                 $index++;
