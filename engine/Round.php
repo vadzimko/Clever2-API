@@ -29,7 +29,7 @@ class Round
             $this->correctAnswerNumber = $i + 1;
 
             $this->startTime = milliTime();
-            $this->endTime = milliTime() + 1000000000;
+            $this->endTime = $this->startTime + Round::ROUND_DURATION_SEC * 1000;
 
             setAnswerByUserId($redis, $firstPlayerId, 0);
             setAnswerByUserId($redis, $secondPlayerId, 0);
@@ -38,12 +38,7 @@ class Round
         }
     }
 
-    function getRoundEndMilliTime() {
-        return $this->startTime + Round::ROUND_DURATION_SEC * 1000;
-    }
-
     function getNextRoundMilliTime() {
-        return min($this->startTime + (Round::ROUND_DURATION_SEC + Round::TIMEOUT_BETWEEN_ROUNDS_SEC) * 1000,
-                    $this->endTime + Round::TIMEOUT_BETWEEN_ROUNDS_SEC * 1000);
+        return $this->endTime + Round::TIMEOUT_BETWEEN_ROUNDS_SEC * 1000;
     }
 }

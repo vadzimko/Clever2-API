@@ -15,7 +15,7 @@ try {
     }
 
     $opponentId = $redis->spop('waiting_list');
-    if ($opponentId == NULL) {
+    if ($opponentId === NULL) {
         $redis->sadd('waiting_list', $userId);
 
         die(toResponse(array(

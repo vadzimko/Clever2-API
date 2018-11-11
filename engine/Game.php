@@ -55,7 +55,7 @@ class Game
         }
 
         $redis = new Predis\Client();
-        if ($this->status == GameStatus::ROUND && (milliTime() > $this->round->getRoundEndMilliTime() ||
+        if ($this->status == GameStatus::ROUND && (milliTime() > $this->round->endTime ||
                 getAnswerByUserId($redis, $this->firstPlayerId) && getAnswerByUserId($redis, $this->secondPlayerId))) {
 
             $this->addPoints();
@@ -78,7 +78,7 @@ class Game
 
     private function finishRound()
     {
-        $this->round->endTime = min(milliTime(), $this->round->startTime + Round::ROUND_DURATION_SEC * 1000);
+        $this->round->endTime = min(milliTime(), $this->round->endTime);
         $this->status = GameStatus::ROUND_TIMEOUT;
     }
 

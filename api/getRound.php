@@ -29,7 +29,7 @@ try {
                 'question' => $round->question,
                 'answers' => $round->answers,
                 'opponent_id' => $opponentId,
-                'end_time' => $round->getRoundEndMilliTime()
+                'end_time' => $round->endTime
             )));
         }
     }
